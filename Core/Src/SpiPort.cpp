@@ -1,18 +1,59 @@
-/*
- * SpiPort.cpp
- *
- *  Created on: Apr 14, 2023
- *      Author: e.filatov
- */
-
 #include "SpiPort.hpp"
-
 SpiPort::SpiPort() {
-	// TODO Auto-generated constructor stub
-
+	this->port = GPIOA;
+	this->pin = 0;
 }
 
-SpiPort::~SpiPort() {
-	// TODO Auto-generated destructor stub
+SpiPort::SpiPort(GPIO_TypeDef *port, uint8_t pin) {
+	this->port = port;
+	this->pin = pin;
 }
 
+void SpiPort::setCS(GPIO_TypeDef *port, uint8_t pin) {
+	this->port = port;
+	this->pin = pin;
+}
+
+void SpiPort::setTx(uint8_t *dat0, uint8_t *dat1, uint8_t *dat2, uint8_t *dat3) {
+	this->tx[0] = *dat0;
+	this->tx[1] = *dat1;
+	this->tx[2] = *dat2;
+	this->tx[3] = *dat3;
+	this->tx[5] = this->tx[0] + this->tx[1] + this->tx[2] + this->tx[3] + this->tx[4];
+}
+
+void SpiPort::select() {
+	this->port->BRR = (1 << this->pin);
+}
+
+void SpiPort::unSelect() {
+	this->port->BSRR = (1 << this->pin);
+}
+
+uint8_t SpiPort::rxCheck() {
+	if (this->rx[0] + this->rx[1] + this->rx[2] + this->rx[3] + this->rx[4] == this->rx[5]) {
+		return 1;
+	}
+	return 0;
+}
+
+uint8_t SpiPort::prevCheck() {
+	if (this->txPrev[0] != this->rx[0] || this->txPrev[1] != this->rx[1]
+			|| this->txPrev[2] != this->rx[2] || this->txPrev[3] != this->rx[3]
+			|| this->txPrev[4] != this->rx[4]) {
+		this->txPrev[0] = this->rx[0];
+		this->txPrev[1] = this->rx[1];
+		this->txPrev[2] = this->rx[2];
+		this->txPrev[3] = this->rx[3];
+		this->txPrev[4] = this->rx[4];
+		return 1;
+	}
+	return 0;
+}
+
+uint8_t* SpiPort::getRx() {
+	return &this->rx[0];
+}
+uint8_t* SpiPort::getTx() {
+	return &this->tx[0];
+}

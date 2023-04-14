@@ -5,16 +5,26 @@
 
 class SpiPort {
 private:
-	uint8_t spiRx [6];
-	uint8_t spiTx [6];
-	uint8_t spiRxSaved [6];
-	uint8_t spiTxSaved [6];
+	uint8_t rx [6] {0};
+	uint8_t tx [6] {0};
+	uint8_t txPrev [6] {0};
+	uint8_t spiRxSaved [6] {0};
+	uint8_t spiTxSaved [6] {0};
 	GPIO_TypeDef* port;
 	uint8_t pin;
-	uint8_t type;
+	uint8_t type {0};
 
 public:
 	SpiPort();
+	SpiPort(GPIO_TypeDef* port, uint8_t pin);
+	void setCS(GPIO_TypeDef *port, uint8_t pin);
+	void setTx(uint8_t *dat0, uint8_t *dat1, uint8_t *dat2, uint8_t *dat3);
+	void select();
+	void unSelect();
+	uint8_t rxCheck();
+	uint8_t prevCheck();
+	uint8_t* getRx();
+	uint8_t* getTx();
 };
 
 #endif

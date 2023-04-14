@@ -1,9 +1,15 @@
-../Core/Src/main.cpp:81:6:void HAL_UART_RxCpltCallback(UART_HandleTypeDef*)	16	static
-../Core/Src/main.cpp:90:5:int main()	16	static
-../Core/Src/main.cpp:171:6:void SystemClock_Config()	80	static
-../Core/Src/main.cpp:208:13:void MX_SPI1_Init()	8	static
-../Core/Src/main.cpp:248:13:void MX_TIM6_Init()	8	static
-../Core/Src/main.cpp:278:13:void MX_USART2_UART_Init()	8	static
-../Core/Src/main.cpp:311:13:void MX_DMA_Init()	16	static
-../Core/Src/main.cpp:328:13:void MX_GPIO_Init()	48	static
-../Core/Src/main.cpp:373:6:void Error_Handler()	8	static
+../Core/Src/main.cpp:128:6:void HAL_UART_RxCpltCallback(UART_HandleTypeDef*)	16	static
+../Core/Src/main.cpp:143:6:void HAL_UART_TxCpltCallback(UART_HandleTypeDef*)	16	static
+../Core/Src/main.cpp:148:6:void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef*)	16	static
+../Core/Src/main.cpp:153:6:void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef*)	16	static
+../Core/Src/main.cpp:158:6:void calculateRxSumm(uint8_t*)	24	static
+../Core/Src/main.cpp:180:5:int main()	32	static
+../Core/Src/main.cpp:317:6:void SystemClock_Config()	80	static
+../Core/Src/main.cpp:354:13:void MX_SPI1_Init()	8	static
+../Core/Src/main.cpp:394:13:void MX_TIM6_Init()	8	static
+../Core/Src/main.cpp:424:13:void MX_USART2_UART_Init()	8	static
+../Core/Src/main.cpp:457:13:void MX_DMA_Init()	16	static
+../Core/Src/main.cpp:474:13:void MX_GPIO_Init()	48	static
+../Core/Src/main.cpp:519:6:void Error_Handler()	8	static
+../Core/Src/main.cpp:525:1:void __static_initialization_and_destruction_0(int, int)	24	static
+../Core/Src/main.cpp:525:1:cpp)	8	static

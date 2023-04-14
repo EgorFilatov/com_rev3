@@ -1,9 +1,0 @@
-main.cpp:81:6:void HAL_UART_RxCpltCallback(UART_HandleTypeDef*)	1
-main.cpp:90:5:int main()	11
-main.cpp:171:6:void SystemClock_Config()	3
-main.cpp:208:13:void MX_SPI1_Init()	2
-main.cpp:248:13:void MX_TIM6_Init()	2
-main.cpp:278:13:void MX_USART2_UART_Init()	2
-main.cpp:311:13:void MX_DMA_Init()	1
-main.cpp:328:13:void MX_GPIO_Init()	1
-main.cpp:373:6:void Error_Handler()	1

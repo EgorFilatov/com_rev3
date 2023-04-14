@@ -23,6 +23,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "SpiPort.hpp"
 
 /* USER CODE END Includes */
 
@@ -51,15 +52,61 @@ TIM_HandleTypeDef htim6;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-uint8_t uartRx1[53] = { 0 };
-uint8_t uartRx2[53] = { 0 };
-uint8_t uartRxSaved1[53] = { 0 };
-uint8_t uartRxSaved2[53] = { 0 };
-uint8_t uartRxState = 0;
-uint8_t uartRxFlag = 0;
+#define TIM_PERIOD_MS 5
 
-uint16_t uartRxSumm = 0;
-uint8_t uartRxSummArr[2] = { 0 };
+uint8_t uartRx0[53] = { 0 };
+uint8_t uartRx1[53] = { 0 };
+uint8_t uartRxSaved0[53] = { 0 };
+uint8_t uartRxSaved1[53] = { 0 };
+
+uint8_t uartResMs = 0;
+uint16_t uartTxMs = 0;
+
+uint8_t uartTx[55] = {0x55,0xAA,  // Контрольные байты (0x55,0xAA)
+					  0x32,       // Размер массива
+					  0xFF,0xFF,  // Тех. состояние(0-есть плата, 1-нет платы)
+
+					  0,0,  // Порт 1
+					  0,0,
+					  0,0,  // Порт 2
+					  0,0,
+					  0,0,  // Порт 3
+					  0,0,
+					  0,0,  // Порт 4
+					  0,0,
+					  0,0,  // Порт 5
+					  0,0,
+					  0,0,  // Порт 6
+					  0,0,
+					  0,0,  // Порт 7
+					  0,0,
+					  0,0,  // Порт 8
+					  0,0,
+					  0,0,  // Порт 9
+					  0,0,
+					  0,0,  // Порт 10
+					  0,0,
+					  0,0,  // Порт 11
+					  0,0,
+					  0,0,  // Порт 12
+					  0,0,
+
+					  0,0}; // Контрольная сумма
+uint8_t uartTxSaved[55] = { 0 };
+
+uint8_t uartRxState0 = 0;
+uint8_t uartRxState1 = 0;
+
+uint8_t uartTxState = 0;
+
+uint8_t uartRxFlag = 0;
+uint8_t uartTxFlag = 0;
+
+uint16_t uartTxSumm = 0;
+
+SpiPort spiPort[12];
+uint8_t spiState = 0;
+uint8_t port = 0;
 
 uint8_t timFlag = 0;
 
@@ -79,7 +126,50 @@ static void MX_TIM6_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
-	uartRxState = 2;
+	if (uartRxState0 = 1) {
+		uartRxState0 = 2;
+		uartRxState1 = 1;
+		HAL_UART_Receive_IT(&huart2, uartRx1, 53);
+
+	} else if (uartRxState1 = 1) {
+		uartRxState1 = 2;
+		uartRxState0 = 1;
+		HAL_UART_Receive_IT(&huart2, uartRx0, 53);
+
+	}
+	uartResMs = 0;
+}
+
+void HAL_UART_TxCpltCallback (UART_HandleTypeDef *huart)
+{
+	uartTxState = 0;
+}
+
+void HAL_SPI_TxRxCpltCallback (SPI_HandleTypeDef * hspi)
+{
+	spiState = 2;
+}
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
+	++uartResMs;
+	++uartTxMs;
+}
+
+void calculateRxSumm(uint8_t *uartRxBuff) {
+	uint16_t uartRxSumm = 0;
+	uint8_t uartRxSummArr[2] = { 0 };
+
+	for (uint8_t i = 0; i < 51; i++) {
+		uartRxSumm += *(uartRxBuff + i);
+	}
+	uartRxSummArr[0] = (uint8_t) uartRxSumm;
+	uartRxSummArr[1] = (uint8_t) (uartRxSumm >> 8);
+
+	if (uartRxSummArr[0] == *(uartRxBuff + 51) && uartRxSummArr[0] == *(uartRxBuff + 51)) {
+		for (uint8_t i = 0; i < 53; i++) {
+			uartRxSaved0[i] = uartRx0[i];
+		}
+	}
 }
 /* USER CODE END 0 */
 
@@ -90,7 +180,18 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+	spiPort[0].setCS(GPIOC, 9);
+	spiPort[1].setCS(GPIOC, 8);
+	spiPort[2].setCS(GPIOC, 7);
+	spiPort[3].setCS(GPIOC, 6);
+	spiPort[4].setCS(GPIOB, 15);
+	spiPort[5].setCS(GPIOB, 14);
+	spiPort[6].setCS(GPIOB, 13);
+	spiPort[7].setCS(GPIOB, 12);
+	spiPort[8].setCS(GPIOB, 2);
+	spiPort[9].setCS(GPIOB, 1);
+	spiPort[10].setCS(GPIOB, 0);
+	spiPort[11].setCS(GPIOC, 5);
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -117,38 +218,30 @@ int main(void)
   MX_TIM6_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start_IT(&htim6);
+
+  HAL_UART_Receive_IT(&huart2, uartRx0, 53);
+  uartRxState0 = 1;
+  uartResMs = 0;
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-		if (uartRxState == 0) {
-			HAL_UART_Receive_IT(&huart2, uartRx1, 53);
-			uartRxState = 1;
-		} else if (uartRxState == 1 && timFlag == 1) {
-			if (huart2.RxXferCount < 0x0035) {
+		if (uartRxState0 == 1 && uartResMs > 2 && huart2.RxXferCount < 0x0035 && huart2.RxXferCount > 0) {
+			HAL_UART_AbortReceive_IT(&huart2);
+			HAL_UART_Receive_IT(&huart2, uartRx0, 53);
+			uartRxState0 = 0;
+			uartResMs = 0;
+		} else if (uartRxState1 == 1 && uartResMs > 2 && huart2.RxXferCount < 0x0035 && huart2.RxXferCount > 0) {
 				HAL_UART_AbortReceive_IT(&huart2);
-				uartRxState = 0;
-			}
-			timFlag = 0;
-		} else if (uartRxState == 2) {
-			uartRxState = 0;
-
-			uartRxSumm = 0;
-			for (uint8_t i = 0; i < 53; i++) {
-				uartRxSumm += uartRx1[i];
-			}
-
-			uartRxSummArr[0] = (uint8_t) uartRxSumm;
-			uartRxSummArr[1] = (uint8_t) (uartRxSumm >> 8);
-
-			if (uartRxSummArr[0] == uartRx1[51] && uartRxSummArr[0] == uartRx1[52] && uartRxFlag == 0) {
-				for (uint8_t i = 0; i < 53; i++) {
-					uartRxSaved1[i] = uartRx1[i];
-				}
-				uartRxFlag = 1;
-			}
+				HAL_UART_Receive_IT(&huart2, uartRx1, 53);
+				uartRxState1 = 0;
+				uartResMs = 0;
+		} else if (uartRxState0 == 2) {
+				calculateRxSumm(uartRx0);
+		} else if (uartRxState1 == 2) {
+				calculateRxSumm(uartRx1);
 		}
 
 
@@ -156,7 +249,60 @@ int main(void)
 
 
 
+		if (spiState == 0) {
+			if (port == 0) {
+				spiState = 1;
+				spiPort[12].unSelect();
 
+				spiPort[port].setTx(&uartRxSaved0[4 * port + 3], &uartRxSaved0[4 * port + 4], &uartRxSaved0[4 * port + 5], &uartRxSaved0[4 * port + 6]);
+				spiPort[port].select();
+				HAL_SPI_TransmitReceive_IT(&hspi1, spiPort[port].getTx(), spiPort[port].getRx(), 6);
+			}
+
+		} else if (spiState == 2) {
+			if (port == 0) {
+				spiState = 0;
+				if (spiPort[port].rxCheck()) {
+					++port;
+					if (spiPort[port].prevCheck()) {
+						uartTxFlag = 3;
+
+						uartTx[4 * port + 5] = *(spiPort[port].getRx());
+						uartTx[4 * port + 6] = *(spiPort[port].getRx() + 1);
+						uartTx[4 * port + 7] = *(spiPort[port].getRx() + 2);
+						uartTx[4 * port + 8] = *(spiPort[port].getRx() + 3);
+						*(spiPort[0].getRx() + 4) ? uartTx[3] &= ~(1 << port) : uartTx[3] |= (1 << port);
+					}
+				}
+			}
+		}
+
+
+
+
+
+		if (uartTxMs > 300) {
+			uartTxMs = 0;
+			uartTxFlag = 1;
+		}
+
+		if (uartTxFlag != 0 && uartTxState == 0) {
+			uartTxState = 1;
+			--uartTxFlag;
+
+			for (int i = 0; i < 55; i++) {
+				uartTxSaved[i] = uartTx[i];
+			}
+
+			uartTxSumm = 0;
+			for (uint8_t i = 0; i < 53; i++) {
+				uartTxSumm += uartTxSaved[i];
+			}
+			uartTxSaved[53] = (uint8_t) uartTxSumm;
+			uartTxSaved[54] = (uint8_t) (uartTxSumm >> 8);
+
+			HAL_UART_Transmit_IT(&huart2, (uint8_t*) uartTxSaved, 55);
+		}
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -258,7 +404,7 @@ static void MX_TIM6_Init(void)
   htim6.Instance = TIM6;
   htim6.Init.Prescaler = 23999;
   htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim6.Init.Period = 9;
+  htim6.Init.Period = TIM_PERIOD_MS * 2 - 1;
   htim6.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim6) != HAL_OK)
   {
