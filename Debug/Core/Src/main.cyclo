@@ -1,0 +1,13 @@
+main.cpp:201:5:int main()	508
+main.cpp:1553:6:void SystemClock_Config()	3
+main.cpp:1590:13:void MX_SPI1_Init()	2
+main.cpp:1630:13:void MX_TIM6_Init()	2
+main.cpp:1660:13:void MX_USART2_UART_Init()	2
+main.cpp:1693:13:void MX_DMA_Init()	1
+main.cpp:1710:13:void MX_GPIO_Init()	1
+main.cpp:1748:6:void HAL_UART_RxCpltCallback(UART_HandleTypeDef*)	3
+main.cpp:1762:6:void HAL_UART_TxCpltCallback(UART_HandleTypeDef*)	1
+main.cpp:1768:6:void HAL_UART_ErrorCallback(UART_HandleTypeDef*)	1
+main.cpp:1788:6:void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef*)	1
+main.cpp:1808:6:void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef*)	3
+main.cpp:1828:6:void Error_Handler()	1
